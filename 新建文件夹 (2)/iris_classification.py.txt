@@ -1,0 +1,47 @@
+# 1. 导入需要用到的工具库
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris          # 内置的鸢尾花数据集
+from sklearn.model_selection import train_test_split  # 划分训练集和测试集
+from sklearn.linear_model import LogisticRegression   # 逻辑回归模型
+from sklearn.neighbors import KNeighborsClassifier    # K近邻模型
+from sklearn.tree import DecisionTreeClassifier       # 决策树模型
+from sklearn.metrics import accuracy_score            # 准确率计算工具
+
+# 2. 加载数据集
+iris = load_iris()
+# 整理成表格形式，方便查看
+df = pd.DataFrame(iris.data, columns=iris.feature_names)
+df['label'] = iris.target  # 0、1、2 对应三种鸢尾花
+
+# 3. 划分数据：一部分用来训练模型，一部分用来测试效果
+X = iris.data    # 花的特征：花萼长度、宽度，花瓣长度、宽度
+y = iris.target  # 花的类别
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+# test_size=0.3 表示30%的数据用来测试，random_state固定随机结果，每次运行都一样
+
+# 4. 定义3种常用的基础分类算法
+models = {
+    "逻辑回归": LogisticRegression(max_iter=200),
+    "K近邻(K=3)": KNeighborsClassifier(n_neighbors=3),
+    "决策树": DecisionTreeClassifier(random_state=42)
+}
+
+# 5. 依次训练模型并计算准确率
+print("=== 各模型在测试集上的准确率 ===")
+for name, model in models.items():
+    model.fit(X_train, y_train)       # 用训练集学习
+    y_pred = model.predict(X_test)    # 用测试集预测
+    acc = accuracy_score(y_test, y_pred)  # 计算预测正确率
+    print(f"{name}：准确率 {acc:.2%}")
+
+# 6. 简单的可视化：特征分布散点图
+plt.figure(figsize=(8, 5))
+plt.scatter(df.iloc[:, 0], df.iloc[:, 1], c=df['label'], cmap='viridis')
+plt.xlabel('花萼长度 (cm)')
+plt.ylabel('花萼宽度 (cm)')
+plt.title('鸢尾花特征分布')
+plt.savefig('iris_scatter.png')  # 保存图片，README里可以用
+plt.close()
